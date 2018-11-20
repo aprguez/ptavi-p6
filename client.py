@@ -5,10 +5,10 @@
 import socket
 import sys
 
-#Cliente UDP simple.
+# Cliente UDP simple.
 if len(sys.argv) != 3:
     sys.exit('Usage: python client.py method receiver@IP:SIPport')
-    
+
 METODO = sys.argv[1]
 DIRECCION = sys.argv[2].split('@')
 
@@ -36,6 +36,6 @@ if METODO == 'INVITE':
     my_socket.send(bytes(LINE, 'utf-8') + b'\r\n')
     print('Enviando: ' + LINE)
 
-#Cerramos.
+# Cerramos.
 my_socket.close()
 print("Fin.")
