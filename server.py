@@ -21,8 +21,8 @@ class EchoHandler(socketserver.DatagramRequestHandler):
         METODO = line.split(' ')[0]
         METODOS = ['INVITE', 'BYE', 'ACK']
         IP = self.client_address[0]
-        if not METODO in METODOS:
-            self.wfile.write(b"SIP/2.0 405 Method Not Allowed" + b"\r\n" + b"\r\n")
+        if METODO not in METODOS:
+            self.wfile.write("SIP/2.0 405 Method Not Allowed\r\n\r\n")
         elif METODO == 'INVITE':
             self.wfile.write(b"SIP/2.0 100 Trying\r\n\r\n")
             self.wfile.write(b"SIP/2.0 180 Ring\r\n\r\n")
@@ -39,6 +39,7 @@ class EchoHandler(socketserver.DatagramRequestHandler):
         else:
             print("Petición incorrecta recibida")
             self.wfile.write("SIP/2.0 400 Bad Request\r\n\r\n")
+
 
 if __name__ == "__main__":
     try:
