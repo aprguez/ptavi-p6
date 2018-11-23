@@ -1,12 +1,13 @@
-#!/usr/bin/python3
-# -*- coding: utf-8 -*-
+#!/usr/bin/python
+# -*- coding: iso-8859-15 -*-
 """
-Clase (y programa principal) para un servidor de eco en UDP simple
+Clase (y programa principal) para un servidor de eco
+en UDP simple
 """
 
 import socketserver
 import sys
-
+import os
 
 
 class EchoHandler(socketserver.DatagramRequestHandler):
@@ -15,32 +16,37 @@ class EchoHandler(socketserver.DatagramRequestHandler):
     """
 
     def handle(self):
-        # Escribe dirección y puerto del cliente (de tupla client_address)
-        
-        while 1:
-            # Leyendo línea a línea lo que nos envía el cliente
-            line = self.rfile.read()
-            line = line.split()
-            if not line:
-                break
-            if line[0] == "INVITE":
-                print("INVITE recibido")
-                self.wfile.write("SIP/2.0 100 Trying \r\n SIP/2.0 180 Ring \r\n SIP/2.0 200 OK")
-            elif line[0] == "ACK"
-                print("ACK recibido") 
-            elif line[0] == "BYE" 
-                self.wfile.write("SIP/2.0 200 OK")
-            # Si no hay más líneas salimos del bucle infinito
+        """Handle Server SIP."""
+        line = self.rfile.read()
+        METODO = line.split(' ')[0]
+        METODOS = ['INVITE', 'BYE', 'ACK']
+        IP = self.client_address[0]
+        if not METODO in METODOS:
+            self.wfile.write(b"SIP/2.0 405 Method Not Allowed" + b"\r\n" + b"\r\n")
+        elif METODO == 'INVITE':
+            self.wfile.write(b"SIP/2.0 100 Trying\r\n\r\n")
+            self.wfile.write(b"SIP/2.0 180 Ring\r\n\r\n")
+            self.wfile.write(b"SIP/2.0 200 OK" + b"\r\n" + b"\r\n")
+        elif METODO == 'ACK':
+            aEjecutar = 'mp32rtp -i ' + IP + ' -p 23032 < ' + sys.argv[3]
+            print("Vamos a ejecutar", aEjecutar)
+            os.system(aEjecutar)
+            os.system('chmod 755 mp32rtp')
+            print("Fin del audio")
+        elif METODO == 'BYE':
+            print("BYE recibido")
+            self.wfile.write("SIP/2.0 200 OK\r\n\r\n")
+        else:
+            print("Petición incorrecta recibida")
+            self.wfile.write("SIP/2.0 400 Bad Request\r\n\r\n")
 
 if __name__ == "__main__":
-    if len(sys.argv) != 4:
-	    sys.exit("Usage: python server.py IP port audio_file")
-    else:
-        print "Listening..."
-    # Creamos servidor de eco y escuchamos
-
-    PORT = int(sys.argv[2])
-    serv = SocketServer.UDPServer(("", PORT), EchoHandler)
-    print "Lanzando servidor UDP de eco..."
+    try:
+        IP = sys.argv[1]
+        PORT = int(sys.argv[2])
+        sys.argv[3]
+    except IndexError:
+        sys.exit("Usage: python server.py IP port audio_file")
+    serv = socketserver.UDPServer((IP, PORT), EchoHandler)
+    print("Listening...")
     serv.serve_forever()
-    
